@@ -37,7 +37,7 @@ pip install .            # 需要较新的 pip：python3 -m pip install --upgrad
 ```
 
 1. 打开打印机，并**把手机、平板上的厂商 App 和蓝牙关掉**：打印机同一时间只和一个设备通信。
-2. **macOS：**在 系统设置 → 蓝牙 里配对一次（系统会说它是打印机，不用管）。**Linux：**`bluetoothctl scan on`，然后 `bluetoothctl trust <地址>`（不需要配对）。
+2. **macOS：**在 系统设置 → 蓝牙 里配对一次（系统会说它是打印机，不用管）。**Linux：**不需要配对也不需要信任，`paperang-c2 scan` 能找到地址。
 3. 在**终端 App 里**运行（macOS 上进程需要蓝牙权限，只有终端能弹出授权）：
 
 ```bash

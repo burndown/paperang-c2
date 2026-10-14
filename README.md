@@ -37,7 +37,7 @@ pip install .            # needs a recent pip: python3 -m pip install --upgrade 
 ```
 
 1. Switch the printer on and **close the vendor's app / Bluetooth on any phone or tablet**: the printer talks to one device at a time.
-2. **macOS:** pair it once in System Settings → Bluetooth (macOS will say it is a printer; ignore that). **Linux:** `bluetoothctl scan on`, then `bluetoothctl trust <address>` (pairing is not needed).
+2. **macOS:** pair it once in System Settings → Bluetooth (macOS will say it is a printer; ignore that). **Linux:** nothing to pair or trust; `paperang-c2 scan` finds the address.
 3. Run from a **terminal app** (on macOS the process needs Bluetooth permission, which only a terminal can ask for):
 
 ```bash

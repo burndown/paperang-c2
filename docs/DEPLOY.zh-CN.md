@@ -26,7 +26,7 @@ sudo ./deploy/install.sh
 运行前：打开打印机，放到这台机器旁边，确认没有手机连着它。脚本会：
 
 1. 安装 `bluez`、`python3-pil`、`poppler-utils`、`fonts-noto-cjk`，以及（AirPrint 用的）`cups-ipp-utils`、`avahi-daemon`；
-2. 扫描打印机（约 15 秒），在 BlueZ 里把它设为**信任**（不需要配对）；
+2. 扫描打印机（约 15 秒）得到蓝牙地址（不需要配对也不需要信任；用 `--addr` 可以跳过扫描）；
 3. 写 `/etc/default/paperang-c2`（打印机地址、纸宽）；
 4. 安装并启动两个 systemd 服务，用你的普通用户身份、从克隆下来的目录运行；
 5. 连一次打印机确认能通，并打印访问地址。
@@ -43,7 +43,7 @@ sudo ./deploy/install.sh
 --allow-host NAME          网页额外接受的主机名（可重复），比如反向代理的域名
 --no-web / --no-airprint   只装其中一个服务
 --dry-run                  只显示会做什么，不改任何东西
---uninstall                移除服务（软件包、配置、蓝牙信任保留）
+--uninstall                移除服务（已装的软件包和 /etc/default/paperang-c2 保留）
 ```
 
 ### 纸宽
@@ -90,8 +90,7 @@ cat /etc/default/paperang-c2                          # 打印机地址、纸宽
 需要：Python 3.9+、Pillow、BlueZ（`bluetoothctl`）、`fonts-noto-cjk` 或别的中文字体、`pdftoppm`（poppler，处理 PDF）、以及 AirPrint 用的 `ippeveprinter`（CUPS 2.4，Debian 下是 `cups-ipp-utils` 包）和 avahi。
 
 ```bash
-bluetoothctl scan on                       # 找到地址，Ctrl-C 结束
-bluetoothctl trust AA:BB:CC:DD:EE:FF
+bluetoothctl scan on                       # 找到地址，Ctrl-C 结束（不需要配对也不需要信任）
 PAPERANG_ADDR=AA:BB:CC:DD:EE:FF python3 -m paperang_c2 info          # 必须能打印出型号
 PAPERANG_ADDR=AA:BB:CC:DD:EE:FF python3 -m paperang_c2 serve --host 0.0.0.0 --port 8765 --allow-host myserver.local
 ```

@@ -26,7 +26,7 @@ sudo ./deploy/install.sh
 Before you run it: switch the printer on, put it next to the machine, and make sure no phone is connected to it. The script then:
 
 1. installs `bluez`, `python3-pil`, `poppler-utils`, `fonts-noto-cjk` and (for AirPrint) `cups-ipp-utils` and `avahi-daemon`;
-2. scans for the printer (about 15 s) and marks it **trusted** in BlueZ (pairing is not needed);
+2. scans for the printer (about 15 s) to learn its Bluetooth address (no pairing or trust is needed; use `--addr` to skip the scan);
 3. writes `/etc/default/paperang-c2` (printer address, paper width);
 4. installs and starts the two systemd services, running as your normal user, from the cloned directory;
 5. connects once to check that the printer answers, and prints the URLs.
@@ -43,7 +43,7 @@ Options:
 --allow-host NAME          extra host name the web UI accepts (repeatable), e.g. a reverse-proxy name
 --no-web / --no-airprint   install only one of the two services
 --dry-run                  show everything it would do and change nothing
---uninstall                remove the services (packages, config and Bluetooth trust stay)
+--uninstall                remove the services (installed packages and /etc/default/paperang-c2 stay)
 ```
 
 ### Paper width
@@ -91,8 +91,7 @@ cat /etc/default/paperang-c2                          # printer address, paper w
 You need: Python 3.9+, Pillow, BlueZ (`bluetoothctl`), `fonts-noto-cjk` or another CJK font, `pdftoppm` (poppler) for PDF input, and for AirPrint `ippeveprinter` (CUPS 2.4, package `cups-ipp-utils` on Debian) and avahi.
 
 ```bash
-bluetoothctl scan on                       # find the address, then Ctrl-C
-bluetoothctl trust AA:BB:CC:DD:EE:FF
+bluetoothctl scan on                       # find the address, then Ctrl-C (no pairing or trust is needed)
 PAPERANG_ADDR=AA:BB:CC:DD:EE:FF python3 -m paperang_c2 info          # must print the model
 PAPERANG_ADDR=AA:BB:CC:DD:EE:FF python3 -m paperang_c2 serve --host 0.0.0.0 --port 8765 --allow-host myserver.local
 ```

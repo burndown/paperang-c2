@@ -1,8 +1,8 @@
 """RFCOMM transport for Linux (BlueZ) using only the standard library.
 
-Tested on Debian 13 with an Intel AX210 adapter. The printer only needs to be *trusted*,
-pairing is not required:
-    bluetoothctl scan on  ->  bluetoothctl trust <address>
+Tested on Debian 13 with an Intel AX210 adapter. No pairing and no "trust" is needed, and BlueZ does
+not even have to know the device: connecting to the address is enough (checked with the device removed
+from BlueZ). `paperang-c2 scan` finds the address.
 """
 from __future__ import annotations
 

@@ -7,8 +7,8 @@
 #   sudo ./deploy/install.sh --uninstall
 #
 # What it does: installs packages (bluez, python3-pil, poppler-utils, fonts-noto-cjk and, for AirPrint,
-# cups-ipp-utils + avahi-daemon), marks the printer as trusted in BlueZ, writes /etc/default/paperang-c2,
-# and installs two systemd services that run from this directory:
+# cups-ipp-utils + avahi-daemon), finds the printer's Bluetooth address, writes /etc/default/paperang-c2,
+# and installs two systemd services that run from this directory (no pairing or "trust" step is needed):
 #   paperang-c2   web UI + HTTP API  (default port 8765)
 #   paperang-ipp  AirPrint / IPP Everywhere printer "Paperang C2" (port 8631, advertised over mDNS)
 # The services have NO authentication: only use them on a network you trust.
@@ -48,7 +48,7 @@ fi
 id "$RUN_USER" >/dev/null 2>&1 || { echo "no such user: $RUN_USER" >&2; exit 1; }
 
 if [ "$UNINSTALL" = 1 ]; then
-  say "removing services (packages, /etc/default/paperang-c2 and the Bluetooth trust are left alone)"
+  say "removing services (installed packages and /etc/default/paperang-c2 are left alone)"
   for s in paperang-c2 paperang-ipp; do
     run systemctl disable --now "$s" 2>/dev/null || true
     run rm -f "/etc/systemd/system/$s.service"
@@ -86,9 +86,6 @@ if [ -z "$ADDR" ]; then
   fi
 fi
 [[ "$ADDR" =~ ^([0-9A-F]{2}:){5}[0-9A-F]{2}$ ]] || { echo "bad Bluetooth address: $ADDR" >&2; exit 1; }
-
-say "trusting $ADDR in BlueZ (pairing is not needed)"
-run bluetoothctl trust "$ADDR"
 
 say "writing /etc/default/paperang-c2"
 CONF="PAPERANG_ADDR=$ADDR
