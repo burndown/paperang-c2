@@ -5,6 +5,7 @@ import base64
 import io
 import json
 import os
+import socket
 import sys
 import traceback
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -121,10 +122,29 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, {"error": "not found"})
 
 
+class _DualStackServer(HTTPServer):
+    """Listens on IPv4 and IPv6 at once. mDNS names (host.local) often resolve to an IPv6 link-local address only."""
+    address_family = socket.AF_INET6
+
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
+def make_server(host: str, port: int) -> HTTPServer:
+    """For the wildcard address listen on both IP versions (falling back to IPv4 where IPv6 is off)."""
+    if host in ("0.0.0.0", "::"):
+        try:
+            return _DualStackServer(("::", port), Handler)
+        except OSError:
+            return HTTPServer(("0.0.0.0", port), Handler)
+    return HTTPServer((host, port), Handler)
+
+
 def serve(host: str, port: int, addr: str | None, allow_hosts=()) -> None:
     STATE["addr"] = addr
     ALLOWED_HOSTS.update(allow_hosts)
-    srv = HTTPServer((host, port), Handler)
+    srv = make_server(host, port)
     print(f"Paperang C2 web UI: http://{host}:{port}/   (Ctrl-C to stop)")
     try:
         srv.serve_forever()
