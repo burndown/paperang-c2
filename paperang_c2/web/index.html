@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paperang C2</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mute:#6f6e69;--line:#e1dfd8;--accent:#c4552d;--ok:#2d7a4f;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#1f1f1d;--ink:#ecebe6;--mute:#9a988f;--line:#33322f;--accent:#e07a52;--ok:#5fbf86;--bad:#f2867e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:820px){main{grid-template-columns:minmax(0,1fr) 360px;align-items:start}}
+h1{font-size:20px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:14px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--ink);font:inherit;cursor:pointer}
+.tab[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--bg);color:var(--ink)}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:26px;text-align:center;color:var(--mute);cursor:pointer}
+.drop.on{border-color:var(--accent)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
+label{font-size:14px;color:var(--mute);display:flex;gap:6px;align-items:center}
+select,input[type=number]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+button.go{width:100%;margin-top:14px;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font:600 16px inherit;cursor:pointer}
+button.go:disabled{opacity:.5;cursor:wait}
+button.sm{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--ink);font:inherit;cursor:pointer}
+#status{margin-top:10px;font-size:14px;min-height:1.4em}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.paper{background:#fff;border:1px solid var(--line);border-radius:4px;padding:0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.12)}
+.paper img{display:block;width:100%;height:auto}
+.meta{font-size:13px;color:var(--mute);margin-top:8px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}dt{color:var(--mute)}dd{margin:0;text-align:right}
+.hint{font-size:13px;color:var(--mute);margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <h1>Paperang C2</h1>
+    <p class="sub" data-i="sub"></p>
+    <div class="card" style="margin-top:14px">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-k="text" data-i="tabText"></button>
+        <button class="tab" role="tab" aria-selected="false" data-k="image" data-i="tabImage"></button>
+      </div>
+      <div id="pText">
+        <textarea id="text" data-ph="textPh"></textarea>
+        <div class="row">
+          <label><span data-i="size"></span> <input id="size" type="number" min="16" max="200" value="56" style="width:76px"></label>
+          <label><span data-i="align"></span> <select id="align"><option value="left" data-i="left"></option><option value="center" data-i="center"></option><option value="right" data-i="right"></option></select></label>
+        </div>
+      </div>
+      <div id="pImage" hidden>
+        <div class="drop" id="drop" data-i="drop"></div>
+        <input id="file" type="file" accept="image/*" hidden>
+        <div class="row">
+          <label><span data-i="mode"></span> <select id="mode"><option value="dither" data-i="dither"></option><option value="threshold" data-i="threshold"></option></select></label>
+          <label><input id="rotate" type="checkbox"> <span data-i="rotate"></span></label>
+        </div>
+      </div>
+      <div class="row">
+        <label><span data-i="density"></span> <input id="density" type="number" min="0" max="255" data-ph="densityPh" style="width:84px"></label>
+      </div>
+      <button class="go" id="print" data-i="print"></button>
+      <div id="status"></div>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <div class="row" style="margin:0 0 10px;justify-content:space-between"><strong data-i="preview"></strong><span class="meta" id="pmeta" style="margin:0"></span></div>
+      <div class="paper"><img id="preview" alt="" hidden></div>
+      <div class="hint" data-i="previewHint"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="row" style="margin:0 0 10px;justify-content:space-between"><strong data-i="printer"></strong><button class="sm" id="probe" data-i="probe"></button></div>
+      <dl id="info"></dl>
+    </div>
+  </aside>
+</main>
+<script>
+const I18N={
+ en:{sub:"Print over Bluetooth, no phone app. Close the manufacturer's app on any phone or tablet first: the printer talks to one device at a time.",
+  tabText:"Text",tabImage:"Image",textPh:"Type the text to print. Line breaks and Chinese are fine.",size:"Size",align:"Align",left:"Left",center:"Center",right:"Right",
+  drop:"Click to choose, drop an image here, or paste one",mode:"Mode",dither:"Dither (photos)",threshold:"Threshold (text, line art)",rotate:"Rotate landscape 90°",
+  density:"Density",densityPh:"default",print:"Print",preview:"Preview",previewHint:"1:1 black and white. White is paper.",printer:"Printer",probe:"Connect and query",
+  notQueried:"Not queried (preview assumes 1248 dots)",connecting:"Connecting…",state:"Status",model:"Model",fw:"Firmware",sn:"Serial",batt:"Battery",paper:"Paper",pw:"Print width",
+  supports:"supports",dots:"dots",at:"@",lines:"dots tall",about:"about",mm:"mm long",printing:"Connecting and printing, this takes ten to twenty seconds…",printed:"Printed",tall:"tall"},
+ zh:{sub:"蓝牙直连打印，无需手机 App。打印前请先关掉手机、平板上的厂商 App，打印机同一时间只和一个设备通信。",
+  tabText:"文字",tabImage:"图片",textPh:"输入要打印的文字，支持换行和中文",size:"字号",align:"对齐",left:"左",center:"居中",right:"右",
+  drop:"点击选择，或把图片拖到这里（也可以直接粘贴）",mode:"处理",dither:"抖动（照片）",threshold:"阈值（文字、线稿）",rotate:"横图旋转 90°",
+  density:"浓度",densityPh:"默认",print:"打印",preview:"预览",previewHint:"1:1 黑白效果，白底为纸面。",printer:"打印机",probe:"连接并查询",
+  notQueried:"未查询（预览按 1248 点）",connecting:"连接中…",state:"状态",model:"型号",fw:"固件",sn:"序列号",batt:"电量",paper:"纸宽",pw:"打印宽度",
+  supports:"支持",dots:"点",at:"@",lines:"点高",about:"约",mm:"mm 长",printing:"正在连接并打印，约需十几到二十秒…",printed:"已打印",tall:"长"}
+};
+const L=(navigator.language||'en').toLowerCase().startsWith('zh')?'zh':'en', T=I18N[L];
+document.documentElement.lang=L==='zh'?'zh-CN':'en';
+document.querySelectorAll('[data-i]').forEach(e=>e.textContent=T[e.dataset.i]);
+document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=T[e.dataset.ph]);
+if(L==='zh'){document.title='喵喵机 C2';document.querySelector('h1').textContent='喵喵机 C2'}
+const $=s=>document.querySelector(s);
+$('#text').value=L==='zh'?'你好，喵喵机 C2':'Hello, Paperang C2';
+$('#info').innerHTML=`<dt>${T.state}</dt><dd>${T.notQueried}</dd>`;
+let kind='text', imageData=null, timer=null;
+const j=async(url,body)=>{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.error||r.status);return d};
+function payload(){return {kind,text:$('#text').value,size:+$('#size').value||56,align:$('#align').value,image:imageData,mode:$('#mode').value,rotate:$('#rotate').checked,density:$('#density').value}}
+function status(msg,cls){const s=$('#status');s.textContent=msg;s.className=cls||''}
+async function preview(){
+  if(kind==='image'&&!imageData){$('#preview').hidden=true;$('#pmeta').textContent='';return}
+  try{const d=await j('/api/preview',payload());const im=$('#preview');im.src=d.png;im.hidden=false;$('#pmeta').textContent=`${d.width}×${d.height} ${T.dots} · ${T.about} ${d.mm} ${T.mm}`;status('')}
+  catch(e){status(e.message,'bad')}
+}
+const later=()=>{clearTimeout(timer);timer=setTimeout(preview,250)};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{kind=b.dataset.k;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===b));$('#pText').hidden=kind!=='text';$('#pImage').hidden=kind!=='image';preview()});
+['text','size','align','mode','rotate'].forEach(i=>$('#'+i).addEventListener('input',later));
+function loadFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{imageData=r.result;$('#drop').textContent=f.name||'(pasted)';preview()};r.readAsDataURL(f)}
+$('#drop').onclick=()=>$('#file').click();$('#file').onchange=e=>loadFile(e.target.files[0]);
+$('#drop').ondragover=e=>{e.preventDefault();$('#drop').classList.add('on')};$('#drop').ondragleave=()=>$('#drop').classList.remove('on');
+$('#drop').ondrop=e=>{e.preventDefault();$('#drop').classList.remove('on');loadFile(e.dataTransfer.files[0])};
+addEventListener('paste',e=>{const f=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(f){document.querySelector('[data-k=image]').click();loadFile(f)}});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function probe(){
+  $('#probe').disabled=true;$('#info').innerHTML=`<dt>${T.state}</dt><dd>${T.connecting}</dd>`;
+  try{const d=await (await fetch('/api/info')).json();if(d.error)throw new Error(d.error);
+    $('#info').innerHTML=[[T.model,d.model],[T.fw,d.firmware],[T.sn,d.serial],[T.batt,d.battery_percent+'%'],[T.paper,d.paper_mm+' mm ('+T.supports+' '+d.paper_sizes_mm.join('/')+')'],[T.pw,d.print_width+' '+T.dots+' @ '+d.dpi+' dpi']].map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');preview()}
+  catch(e){$('#info').innerHTML=`<dt>${T.state}</dt><dd class="bad">${esc(e.message)}</dd>`}
+  $('#probe').disabled=false}
+$('#probe').onclick=probe;
+$('#print').onclick=async()=>{
+  const b=$('#print');b.disabled=true;status(T.printing);
+  try{const d=await j('/api/print',payload());status(`${T.printed}, ${d.height} ${T.lines}`,'ok')}catch(e){status(e.message,'bad')}
+  b.disabled=false};
+preview();
+</script>
+</body>
+</html>

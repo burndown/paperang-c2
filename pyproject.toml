@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paperang-c2"
+version = "0.1.0"
+description = "Print to a Paperang / 作业帮喵喵机 C2 thermal printer over Bluetooth: CLI, web UI, and an AirPrint bridge for a Linux box"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+  "Pillow>=10",
+  'pyobjc-framework-Cocoa>=10; sys_platform == "darwin"',
+  'pyobjc-framework-IOBluetooth>=10; sys_platform == "darwin"',
+]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Printing",
+]
+
+[project.scripts]
+paperang-c2 = "paperang_c2.cli:main"
+
+[tool.setuptools]
+packages = ["paperang_c2"]
+
+[tool.setuptools.package-data]
+paperang_c2 = ["web/*.html"]

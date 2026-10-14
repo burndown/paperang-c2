@@ -1,0 +1,16 @@
+# Installed to /etc/systemd/system/paperang-c2.service by deploy/install.sh
+[Unit]
+Description=Paperang C2 web printer (Bluetooth bridge)
+After=bluetooth.service
+Wants=bluetooth.service
+
+[Service]
+User=@USER@
+WorkingDirectory=@DIR@
+EnvironmentFile=-/etc/default/paperang-c2
+ExecStart=@PYTHON@ -m paperang_c2 serve --host 0.0.0.0 --port @PORT@@ALLOW_HOST_ARGS@
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

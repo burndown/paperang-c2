@@ -1,0 +1,19 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: System packages (CJK font for the rendering tests, poppler for the PDF test)
+        run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk poppler-utils
+      - run: pip install Pillow
+      - run: python -m unittest discover -s tests -v
+      - name: Installer script syntax
+        run: bash -n deploy/install.sh && ./deploy/install.sh --dry-run --addr AA:BB:CC:DD:EE:FF --user runner

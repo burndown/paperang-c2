@@ -1,0 +1,17 @@
+# Installed to /etc/systemd/system/paperang-ipp.service by deploy/install.sh
+# AirPrint / IPP Everywhere front end: iOS and macOS find it through avahi (mDNS).
+[Unit]
+Description=Paperang C2 AirPrint (IPP Everywhere) front end
+After=network-online.target avahi-daemon.service bluetooth.service
+Wants=avahi-daemon.service
+
+[Service]
+User=@USER@
+RuntimeDirectory=paperang-ipp
+EnvironmentFile=-/etc/default/paperang-c2
+ExecStart=@IPPEVE@ -c @DIR@/deploy/paperang-ipp.sh -p @IPP_PORT@ -r _print,_universal -d /run/paperang-ipp -a @DIR@/deploy/paperang-ipp.conf "Paperang C2"
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
