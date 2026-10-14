@@ -73,6 +73,31 @@ A request returns when the paper should be finished, usually ten to twenty secon
 
 **AirPrint:** pick **Paperang C2** in the print dialog of an iPhone, iPad or Mac. Read [AIRPRINT.md](AIRPRINT.md) first: images must be portrait and the paper size should be A4.
 
+## Behind a reverse proxy / on a sub-domain
+
+The web UI only accepts requests whose `Host` header it knows (see above), so a proxy that passes the original
+host name through needs that name allowed. Example for nginx, serving it as `printer.example.lan`:
+
+```bash
+sudo ./deploy/install.sh --addr AA:BB:CC:DD:EE:FF --allow-host printer.example.lan     # re-run is safe
+```
+
+```nginx
+server {
+    listen 80;
+    server_name printer.example.lan;
+    client_max_body_size 50m;                      # image uploads are sent as base64 JSON
+    location / {
+        proxy_pass http://127.0.0.1:8765;          # use an IP:port, not a host name
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;               # must be a name passed to --allow-host
+        proxy_read_timeout 300s;                   # a print request takes ten to twenty seconds
+    }
+}
+```
+
+The AirPrint printer is not proxied: phones find it over mDNS on its own port.
+
 ## Operating it
 
 ```bash

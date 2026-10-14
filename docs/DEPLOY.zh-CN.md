@@ -72,6 +72,31 @@ curl http://<机器>:8765/api/info           # 连接并返回型号、电量、
 
 **AirPrint：**在 iPhone、iPad 或 Mac 的打印对话框里选 **Paperang C2**。先读 [AIRPRINT.md](AIRPRINT.md)（英文）：图要竖的，纸张选 A4。
 
+## 放在反向代理后面 / 用子域名访问
+
+网页服务只接受它认识的 `Host` 头（见上文），所以代理如果把原始主机名透传，就要把这个名字放行。以 nginx、
+用 `printer.example.lan` 访问为例：
+
+```bash
+sudo ./deploy/install.sh --addr AA:BB:CC:DD:EE:FF --allow-host printer.example.lan     # 重复运行是安全的
+```
+
+```nginx
+server {
+    listen 80;
+    server_name printer.example.lan;
+    client_max_body_size 50m;                      # 图片以 base64 的 JSON 上传
+    location / {
+        proxy_pass http://127.0.0.1:8765;          # 写 IP:端口，不要写主机名
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;               # 必须是传给 --allow-host 的名字
+        proxy_read_timeout 300s;                   # 一次打印请求要十几到二十秒
+    }
+}
+```
+
+AirPrint 打印机不经过代理：手机通过 mDNS 直接发现它的端口。
+
 ## 运维
 
 ```bash
