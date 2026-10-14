@@ -37,7 +37,7 @@ pip install .            # 需要较新的 pip：python3 -m pip install --upgrad
 ```
 
 1. 打开打印机，并**把手机、平板上的厂商 App 和蓝牙关掉**：打印机同一时间只和一个设备通信。
-2. **macOS：**在 系统设置 → 蓝牙 里配对一次（系统会说它是打印机，不用管）。**Linux：**不需要配对也不需要信任，`paperang-c2 scan` 能找到地址。
+2. **macOS**：在 系统设置 → 蓝牙 里配对一次（系统会说它是打印机，不用管）。**Linux：**不需要配对也不需要信任，`paperang-c2 scan` 能找到地址。
 3. 在**终端 App 里**运行（macOS 上进程需要蓝牙权限，只有终端能弹出授权）：
 
 ```bash
@@ -62,7 +62,9 @@ cd paperang-c2
 sudo ./deploy/install.sh            # 扫描打印机，装依赖，装两个 systemd 服务
 ```
 
-装好后打开 `http://<那台机器>:8765/`，或者在 iPhone 的 分享 → 打印 里选 **Paperang C2**。选项、更新、卸载、其他系统的手动安装见 [docs/DEPLOY.zh-CN.md](docs/DEPLOY.zh-CN.md)。ESP32 板子做不了这个桥，除非带经典蓝牙（原版 ESP32 可以，S3、C3、C6 只有 BLE）。
+装好后打开 `http://<那台机器>:8765/`，或者在 iPhone 的 分享 → 打印 里选 **Paperang C2**。
+
+选项、更新、卸载、其他系统的手动安装见 [docs/DEPLOY.zh-CN.md](docs/DEPLOY.zh-CN.md)。ESP32 板子做不了这个桥，除非带经典蓝牙（原版 ESP32 可以，S3、C3、C6 只有 BLE）。
 
 **服务没有任何认证，只在你信任的网络里使用。**
 
